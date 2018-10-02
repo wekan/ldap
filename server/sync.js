@@ -1,10 +1,22 @@
-
 import _ from 'underscore';
 import LDAP from './ldap';
 import { log_debug, log_info, log_warn, log_error } from './logger';
 
+Object.defineProperty(Object.prototype, "getValue", {
+  value: function (prop) {
+      const self = this;
+      for (let key in self) {
+          if (key.toLowerCase() == prop.toLowerCase()) {
+              return self[key];
+          }
+      }
+  },
+
+  enumerable: false
+});
+
 export function slug(text) {
-  if (LDAP.settings_get('UTF8_Names_Slugify') !== true) {
+  if (LDAP.settings_get('LDAP_UTF8_NAMES_SLUGIFY') !== true) {
     return text;
   }
   text = slugify(text, '.');
@@ -47,22 +59,20 @@ export function getPropertyValue(obj, key) {
   }
 }
 
-
 export function getLdapUsername(ldapUser) {
-  const usernameField = LDAP.settings_get('LDAP_Username_Field');
+  const usernameField = LDAP.settings_get('LDAP_USERNAME_FIELD');
 
   if (usernameField.indexOf('#{') > -1) {
     return usernameField.replace(/#{(.+?)}/g, function(match, field) {
-      return ldapUser[field];
+      return ldapUser.getValue(field);
     });
   }
 
-  return ldapUser[usernameField];
+  return ldapUser.getValue(usernameField);
 }
 
-
 export function getLdapUserUniqueID(ldapUser) {
-  let Unique_Identifier_Field = LDAP.settings_get('LDAP_Unique_Identifier_Field');
+  let Unique_Identifier_Field = LDAP.settings_get('LDAP_UNIQUE_IDENTIFIER_FIELD');
 
   if (Unique_Identifier_Field !== '') {
     Unique_Identifier_Field = Unique_Identifier_Field.replace(/\s/g, '').split(',');
@@ -70,7 +80,7 @@ export function getLdapUserUniqueID(ldapUser) {
     Unique_Identifier_Field = [];
   }
 
-  let User_Search_Field = LDAP.settings_get('LDAP_User_Search_Field');
+  let User_Search_Field = LDAP.settings_get('LDAP_USER_SEARCH_FIELD');
 
   if (User_Search_Field !== '') {
     User_Search_Field = User_Search_Field.replace(/\s/g, '').split(',');
@@ -82,13 +92,13 @@ export function getLdapUserUniqueID(ldapUser) {
 
   if (Unique_Identifier_Field.length > 0) {
     Unique_Identifier_Field = Unique_Identifier_Field.find((field) => {
-      return !_.isEmpty(ldapUser._raw[field]);
+      return !_.isEmpty(ldapUser._raw.getValue(field));
     });
     if (Unique_Identifier_Field) {
 		    log_debug(`Identifying user with: ${  Unique_Identifier_Field}`);
       Unique_Identifier_Field = {
         attribute: Unique_Identifier_Field,
-        value: ldapUser._raw[Unique_Identifier_Field].toString('hex'),
+        value: ldapUser._raw.getValue(Unique_Identifier_Field).toString('hex'),
       };
     }
     return Unique_Identifier_Field;
@@ -96,8 +106,8 @@ export function getLdapUserUniqueID(ldapUser) {
 }
 
 export function getDataToSyncUserData(ldapUser, user) {
-  const syncUserData = LDAP.settings_get('LDAP_Sync_User_Data');
-  const syncUserDataFieldMap = LDAP.settings_get('LDAP_Sync_User_Data_FieldMap').trim();
+  const syncUserData = LDAP.settings_get('LDAP_SYNC_USER_DATA');
+  const syncUserDataFieldMap = LDAP.settings_get('LDAP_SYNC_USER_DATA_FIELDMAP').trim();
 
   const userData = {};
 
@@ -195,9 +205,9 @@ export function getDataToSyncUserData(ldapUser, user) {
 export function syncUserData(user, ldapUser) {
   log_info('Syncing user data');
   log_debug('user', {'email': user.email, '_id': user._id});
-  log_debug('ldapUser', ldapUser.object);
+  // log_debug('ldapUser', ldapUser.object);
 
-  if (LDAP.settings_get('LDAP_Username_Field') !== '') {
+  if (LDAP.settings_get('LDAP_USERNAME_FIELD') !== '') {
     const username = slug(getLdapUsername(ldapUser));
     if (user && user._id && username !== user.username) {
       log_info('Syncing user username', user.username, '->', username);
@@ -226,8 +236,8 @@ export function addLdapUser(ldapUser, username, password) {
     }
   } else if (ldapUser.mail && ldapUser.mail.indexOf('@') > -1) {
     userObject.email = ldapUser.mail;
-  } else if (LDAP.settings_get('LDAP_Default_Domain') !== '') {
-    userObject.email = `${ username || uniqueId.value }@${ LDAP.settings_get('LDAP_Default_Domain') }`;
+  } else if (LDAP.settings_get('LDAP_DEFAULT_DOMAIN') !== '') {
+    userObject.email = `${ username || uniqueId.value }@${ LDAP.settings_get('LDAP_DEFAULT_DOMAIN') }`;
   } else {
     const error = new Meteor.Error('LDAP-login-error', 'LDAP Authentication succeded, there is no email to create an account. Have you tried setting your Default Domain in LDAP Settings?');
     log_error(error);
@@ -242,7 +252,9 @@ export function addLdapUser(ldapUser, username, password) {
 
   try {
     // This creates the account with password service
+    userObject.ldap = true;
     userObject._id = Accounts.createUser(userObject);
+
     // Add the services.ldap identifiers
     Meteor.users.update({ _id:  userObject._id }, {
 		    $set: {
@@ -263,7 +275,7 @@ export function addLdapUser(ldapUser, username, password) {
 }
 
 export function importNewUsers(ldap) {
-  if (LDAP.settings_get('LDAP_Enable') !== true) {
+  if (LDAP.settings_get('LDAP_ENABLE') !== true) {
     log_error('Can\'t run LDAP Import, LDAP is disabled');
     return;
   }
@@ -291,14 +303,14 @@ export function importNewUsers(ldap) {
       log_debug('userQuery', userQuery);
 
       let username;
-      if (LDAP.settings_get('LDAP_Username_Field') !== '') {
+      if (LDAP.settings_get('LDAP_USERNAME_FIELD') !== '') {
         username = slug(getLdapUsername(ldapUser));
       }
 
       // Add user if it was not added before
       let user = Meteor.users.findOne(userQuery);
 
-      if (!user && username && LDAP.settings_get('LDAP_Merge_Existing_Users') === true) {
+      if (!user && username && LDAP.settings_get('LDAP_MERGE_EXISTING_USERS') === true) {
         const userQuery = {
           username,
         };
@@ -329,7 +341,7 @@ export function importNewUsers(ldap) {
 }
 
 function sync() {
-  if (LDAP.settings_get('LDAP_Enable') !== true) {
+  if (LDAP.settings_get('LDAP_ENABLE') !== true) {
     return;
   }
 
@@ -339,15 +351,15 @@ function sync() {
     ldap.connectSync();
 
     let users;
-    if (LDAP.settings_get('LDAP_Background_Sync_Keep_Existant_Users_Updated') === true) {
+    if (LDAP.settings_get('LDAP_BACKGROUND_SYNC_KEEP_EXISTANT_USERS_UPDATED') === true) {
       users = Meteor.users.find({ 'services.ldap': { $exists: true }});
     }
 
-    if (LDAP.settings_get('LDAP_Background_Sync_Import_New_Users') === true) {
+    if (LDAP.settings_get('LDAP_BACKGROUND_SYNC_IMPORT_NEW_USERS') === true) {
       importNewUsers(ldap);
     }
 
-    if (LDAP.settings_get('LDAP_Background_Sync_Keep_Existant_Users_Updated') === true) {
+    if (LDAP.settings_get('LDAP_BACKGROUND_SYNC_KEEP_EXISTANT_USERS_UPDATED') === true) {
       users.forEach(function(user) {
         let ldapUser;
 
@@ -374,7 +386,7 @@ function sync() {
 const jobName = 'LDAP_Sync';
 
 const addCronJob = _.debounce(Meteor.bindEnvironment(function addCronJobDebounced() {
-  if (LDAP.settings_get('LDAP_Background_Sync') !== true) {
+  if (LDAP.settings_get('LDAP_BACKGROUND_SYNC') !== true) {
     log_info('Disabling LDAP Background Sync');
     if (SyncedCron.nextScheduledAtDate(jobName)) {
       SyncedCron.remove(jobName);
@@ -382,11 +394,11 @@ const addCronJob = _.debounce(Meteor.bindEnvironment(function addCronJobDebounce
     return;
   }
 
-  if (LDAP.settings_get('LDAP_Background_Sync_Interval')) {
+  if (LDAP.settings_get('LDAP_BACKGROUND_SYNC_INTERVAL')) {
     log_info('Enabling LDAP Background Sync');
     SyncedCron.add({
       name: jobName,
-      schedule: (parser) => parser.text(LDAP.settings_get('LDAP_Background_Sync_Interval')),
+      schedule: (parser) => parser.text(LDAP.settings_get('LDAP_BACKGROUND_SYNC_INTERVAL')),
       job() {
         sync();
       },
@@ -397,7 +409,7 @@ const addCronJob = _.debounce(Meteor.bindEnvironment(function addCronJobDebounce
 
 Meteor.startup(() => {
   Meteor.defer(() => {
-    LDAP.settings_get('LDAP_Background_Sync', addCronJob);
-    LDAP.settings_get('LDAP_Background_Sync_Interval', addCronJob);
+    LDAP.settings_get('LDAP_BACKGROUND_SYNC', addCronJob);
+    LDAP.settings_get('LDAP_BACKGROUND_SYNC_INTERVAL', addCronJob);
   });
 });

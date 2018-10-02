@@ -17,7 +17,6 @@ Package.onUse(function(api) {
 	api.use('ecmascript@0.9.0');
 	api.use('underscore');
 	api.use('sha');
-
 	api.use('templating', 'client');
 
 	api.use('accounts-base', 'server');
@@ -26,4 +25,8 @@ Package.onUse(function(api) {
 	api.addFiles('client/loginHelper.js', 'client');
 
 	api.mainModule('server/index.js', 'server');
+});
+
+Npm.depends({
+  ldapjs: '1.0.2',
 });

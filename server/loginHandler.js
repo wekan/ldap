@@ -26,14 +26,13 @@ function fallbackDefaultAccountSystem(bind, username, password) {
 }
 
 Accounts.registerLoginHandler('ldap', function(loginRequest) {
-
   if (!loginRequest.ldap || !loginRequest.ldapOptions) {
     return undefined;
   }
 
   log_info('Init LDAP login', loginRequest.username);
 
-  if (Meteor.settings.LDAP_Enable !== true) {
+  if (LDAP.settings_get('LDAP_ENABLE') !== true) {
     return fallbackDefaultAccountSystem(this, loginRequest.username, loginRequest.ldapPass);
   }
 
@@ -64,7 +63,7 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
   }
 
   if (ldapUser === undefined) {
-    if (LDAP.settings_get('LDAP_Login_Fallback') === true) {
+    if (LDAP.settings_get('LDAP_LOGIN_FALLBACK') === true) {
       return fallbackDefaultAccountSystem(self, loginRequest.username, loginRequest.ldapPass);
     }
 
@@ -90,7 +89,7 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
 
   let username;
 
-  if (LDAP.settings_get('LDAP_Username_Field') !== '') {
+  if (LDAP.settings_get('LDAP_USERNAME_FIELD') !== '') {
     username = slug(getLdapUsername(ldapUser));
   } else {
     username = slug(loginRequest.username);
@@ -108,7 +107,7 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
 
   // Login user if they exist
   if (user) {
-    if (user.ldap !== true && LDAP.settings_get('LDAP_Merge_Existing_Users') !== true) {
+    if (user.ldap !== true && LDAP.settings_get('LDAP_MERGE_EXISTING_USERS') !== true) {
       log_info('User exists without "ldap: true"');
       throw new Meteor.Error('LDAP-login-error', `LDAP Authentication succeded, but there's already an existing user with provided username [${ username }] in Mongo.`);
     }
@@ -122,7 +121,7 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
       },
     };
 
-    if( LDAP.settings_get('LDAP_Sync_Group_Roles') === true ) {
+    if( LDAP.settings_get('LDAP_SYNC_GROUP_ROLES') === true ) {
       log_debug('Updating Groups/Roles');
 		    const groups = ldap.getUserGroups(username, ldapUser);
 
@@ -136,7 +135,7 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
 
     syncUserData(user, ldapUser);
 
-    if (LDAP.settings_get('LDAP_Login_Fallback') === true) {
+    if (LDAP.settings_get('LDAP_LOGIN_FALLBACK') === true) {
       Accounts.setPassword(user._id, loginRequest.ldapPass, {logout: false});
     }
 
@@ -148,18 +147,18 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
 
   log_info('User does not exist, creating', username);
 
-  if (LDAP.settings_get('LDAP_Username_Field') === '') {
+  if (LDAP.settings_get('LDAP_USERNAME_FIELD') === '') {
     username = undefined;
   }
 
-  if (LDAP.settings_get('LDAP_Login_Fallback') !== true) {
+  if (LDAP.settings_get('LDAP_LOGIN_FALLBACK') !== true) {
     loginRequest.ldapPass = undefined;
   }
 
   // Create new user
   const result = addLdapUser(ldapUser, username, loginRequest.ldapPass);
 
-  if( LDAP.settings_get('LDAP_Sync_Group_Roles') === true ) {
+  if( LDAP.settings_get('LDAP_SYNC_GROUP_ROLES') === true ) {
     const groups = ldap.getUserGroups(username, ldapUser);
     if( groups.length > 0 ) {
       Roles.setUserRoles(result.userId, groups );
@@ -171,6 +170,8 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
   if (result instanceof Error) {
     throw result;
   }
+
+  console.log('RESULT : ', result);
 
   return result;
 });

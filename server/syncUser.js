@@ -1,4 +1,5 @@
 import {importNewUsers} from './sync';
+import LDAP from './ldap';
 
 Meteor.methods({
   ldap_sync_now() {
@@ -12,7 +13,7 @@ Meteor.methods({
     //	throw new Meteor.Error('error-not-authorized', 'Not authorized', { method: 'ldap_sync_users' });
     //}
 
-    if (Meteor.settings.LDAP_Enable !== true) {
+    if (LDAP.settings_get('LDAP_ENABLE') !== true) {
       throw new Meteor.Error('LDAP_disabled');
     }
 
