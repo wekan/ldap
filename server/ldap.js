@@ -17,7 +17,6 @@ import { log_debug, log_info, log_warn, log_error } from './logger';
 // process.env.LDAP_AUTHENTIFICATION = 'true';
 // process.env.LDAP_AUTHENTIFICATION_USERDN = '';
 // process.env.LDAP_AUTHENTIFICATION_PASSWORD = '';
-// process.env.LDAP_INTERNAL_LOG_LEVEL = 'debug';
 // process.env.LDAP_BACKGROUND_SYNC = 'false';
 // process.env.LDAP_BACKGROUND_SYNC_INTERVAL = '100';
 // process.env.LDAP_BACKGROUND_SYNC_KEEP_EXISTANT_USERS_UPDATED = 'false';
@@ -55,7 +54,6 @@ export default class LDAP {
       host: this.constructor.settings_get('LDAP_HOST'),
       port: this.constructor.settings_get('LDAP_PORT'),
       Reconnect: this.constructor.settings_get('LDAP_RECONNECT'),
-      Internal_Log_Level: this.constructor.settings_get('LDAP_INTERNAL_LOG_LEVEL'),
       timeout: this.constructor.settings_get('LDAP_TIMEOUT'),
       connect_timeout: this.constructor.settings_get('LDAP_CONNECT_TIMEOUT'),
       idle_timeout: this.constructor.settings_get('LDAP_IDLE_TIMEOUT'),
