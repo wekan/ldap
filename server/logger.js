@@ -1,4 +1,4 @@
-const isLogEnabled = process.env.LDAP_INTERNAL_LOG_LEVEL;
+const isLogEnabled = (process.env.LDAP_INTERNAL_LOG_LEVEL === 'true');
 
 function log (level, message, data) { 
     if (isLogEnabled) {
