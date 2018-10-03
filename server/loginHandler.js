@@ -171,7 +171,5 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
     throw result;
   }
 
-  console.log('RESULT : ', result);
-
   return result;
 });
