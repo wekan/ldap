@@ -1,5 +1,6 @@
 const isLogEnabled = (process.env.LDAP_LOG_ENABLED === 'true');
 
+
 function log (level, message, data) { 
     if (isLogEnabled) {
         console.log(`[${level}] ${message} ${ data ? JSON.stringify(data, null, 2) : '' }`);
