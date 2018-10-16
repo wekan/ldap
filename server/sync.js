@@ -192,7 +192,7 @@ export function getDataToSyncUserData(ldapUser, user) {
     userData['services.ldap.idAttribute'] = uniqueId.attribute;
   }
 
-  if (user.ldap !== true) {
+  if (user.authenticationMethod !== 'ldap') {
     userData.ldap = true;
   }
 
@@ -260,7 +260,7 @@ export function addLdapUser(ldapUser, username, password) {
 		    $set: {
 		        'services.ldap': { id: uniqueId.value },
 		        'emails.0.verified': true,
-		        ldap: true,
+		        'authenticationMethod': 'ldap',
 		    }});
   } catch (error) {
     log_error('Error creating user', error);

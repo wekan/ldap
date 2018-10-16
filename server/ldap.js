@@ -3,47 +3,6 @@ import util from 'util';
 import Bunyan from 'bunyan';
 import { log_debug, log_info, log_warn, log_error } from './logger';
 
-
-// Use them to test the ldap withn't use snap
-// process.env.LDAP_ENABLE = 'true';
-// process.env.LDAP_PORT = '389';
-// process.env.LDAP_HOST = '';
-// process.env.LDAP_BASEDN = '';
-// process.env.LDAP_LOGIN_FALLBACK = 'false';
-// process.env.LDAP_RECONNECT = 'true';
-// process.env.LDAP_TIMEOUT = '10000';
-// process.env.LDAP_IDLE_TIMEOUT = '10000';
-// process.env.LDAP_CONNECT_TIMEOUT = '10000';
-// process.env.LDAP_AUTHENTIFICATION = 'true';
-// process.env.LDAP_AUTHENTIFICATION_USERDN = '';
-// process.env.LDAP_AUTHENTIFICATION_PASSWORD = '';
-// process.env.LDAP_BACKGROUND_SYNC = 'false';
-// process.env.LDAP_BACKGROUND_SYNC_INTERVAL = '100';
-// process.env.LDAP_BACKGROUND_SYNC_KEEP_EXISTANT_USERS_UPDATED = 'false';
-// process.env.LDAP_BACKGROUND_SYNC_IMPORT_NEW_USERS = 'false';
-// process.env.LDAP_ENCRYPTION = 'false';
-// process.env.LDAP_CA_CERT = '';
-// process.env.LDAP_REJECT_UNAUTHORIZED = 'false';
-// process.env.LDAP_USER_SEARCH_FILTER = '';
-// process.env.LDAP_USER_SEARCH_SCOPE = '';
-// process.env.LDAP_USER_SEARCH_FIELD = '';
-// process.env.LDAP_SEARCH_PAGE_SIZE = '0';
-// process.env.LDAP_SEARCH_SIZE_LIMIT = '0';
-// process.env.LDAP_GROUP_FILTER_ENABLE = 'false';
-// process.env.LDAP_GROUP_FILTER_OBJECTCLASS = '';
-// process.env.LDAP_GROUP_FILTER_GROUP_ID_ATTRIBUTE = '';
-// process.env.LDAP_GROUP_FILTER_GROUP_MEMBER_ATTRIBUTE = '';
-// process.env.LDAP_GROUP_FILTER_GROUP_MEMBER_FORMAT = '';
-// process.env.LDAP_GROUP_FILTER_GROUP_NAME = '';
-// process.env.LDAP_UNIQUE_IDENTIFIER_FIELD = '';
-// process.env.LDAP_UTF8_NAMES_SLUGIFY = 'true';
-// process.env.LDAP_USERNAME_FIELD = '';
-// process.env.LDAP_MERGE_EXISTING_USERS = 'false';
-// process.env.LDAP_SYNC_USER_DATA = 'false';
-// process.env.LDAP_SYNC_USER_DATA_FIELDMAP = '';
-// process.env.LDAP_SYNC_GROUP_ROLES = '';
-// process.env.LDAP_DEFAULT_DOMAIN = '';
-
 export default class LDAP {
   constructor(){
     this.ldapjs = ldapjs;

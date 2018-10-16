@@ -107,8 +107,8 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
 
   // Login user if they exist
   if (user) {
-    if (user.ldap !== true && LDAP.settings_get('LDAP_MERGE_EXISTING_USERS') !== true) {
-      log_info('User exists without "ldap: true"');
+    if (user.authenticationMethod !== 'ldap' && LDAP.settings_get('LDAP_MERGE_EXISTING_USERS') !== true) {
+      log_info('User exists without "authenticationMethod : ldap"');
       throw new Meteor.Error('LDAP-login-error', `LDAP Authentication succeded, but there's already an existing user with provided username [${ username }] in Mongo.`);
     }
 
