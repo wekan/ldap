@@ -35,7 +35,7 @@ background
 
 LDAP_Background_Sync_Interval: At which interval does the background task sync
 
-LDAP_Encryption: If using LDAPS
+LDAP_Encryption: If using LDAPS, set it to 'ssl', else it will use 'ldap://'
 
 LDAP_CA_Cert: The certification for the LDAPS server
 
