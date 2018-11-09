@@ -24,6 +24,7 @@ export default class LDAP {
       Authentication_Password: this.constructor.settings_get('LDAP_AUTHENTIFICATION_PASSWORD'),
       Authentication_Fallback: this.constructor.settings_get('LDAP_LOGIN_FALLBACK'),
       BaseDN: this.constructor.settings_get('LDAP_BASEDN'),
+      Internal_Log_Level: this.constructor.settings_get('INTERNAL_LOG_LEVEL'),
       User_Search_Filter: this.constructor.settings_get('LDAP_USER_SEARCH_FILTER'),
       User_Search_Scope: this.constructor.settings_get('LDAP_USER_SEARCH_SCOPE'),
       User_Search_Field: this.constructor.settings_get('LDAP_USER_SEARCH_FIELD'),
@@ -41,14 +42,14 @@ export default class LDAP {
   static settings_get(name, ...args) {
     let value = process.env[name];
     if (value !== undefined) {
-        if (value === 'true' || value === 'false') {
-            value = JSON.parse(value);
-        } else if (value !== '' && !isNaN(value)) {
-          value = Number(value);
-        }
-      return value
+      if (value === 'true' || value === 'false') {
+        value = JSON.parse(value);
+      } else if (value !== '' && !isNaN(value)) {
+        value = Number(value);
+      }
+      return value;
     } else {
-        log_warn(`Lookup for unset variable: ${name}`);
+      log_warn(`Lookup for unset variable: ${name}`);
     }
   }
   connectSync(...args) {
@@ -376,9 +377,9 @@ export default class LDAP {
     }
 
     if (this.options.group_filter_group_member_attribute !== '') {
-		    const format_value = ldapUser[this.options.group_filter_group_member_format];
-		    if( format_value ) {
-    			filter.push(`(${ this.options.group_filter_group_member_attribute }=${ format_value })`);
+      const format_value = ldapUser[this.options.group_filter_group_member_format];
+      if( format_value ) {
+        filter.push(`(${ this.options.group_filter_group_member_attribute }=${ format_value })`);
       }
     }
 
@@ -532,6 +533,9 @@ export default class LDAP {
     log_info('Authenticating', dn);
 
     try {
+      if (password === '') {
+        throw new Error('Password is not provided');
+      }
       this.bindSync(dn, password);
       log_info('Authenticated', dn);
       return true;
