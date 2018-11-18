@@ -71,6 +71,17 @@ export function getLdapUsername(ldapUser) {
   return ldapUser.getValue(usernameField);
 }
 
+export function getLdapFullname(ldapUser) {
+  const fullnameField = LDAP.settings_get('LDAP_FULLNAME_FIELD');
+  if (fullnameField.indexOf('#{') > -1) {
+    return fullnameField.replace(/#{(.+?)}/g, function(match, field) {
+      return ldapUser.getValue(field);
+    });
+  }
+
+  return ldapUser.getValue(fullnameField);
+}
+
 export function getLdapUserUniqueID(ldapUser) {
   let Unique_Identifier_Field = LDAP.settings_get('LDAP_UNIQUE_IDENTIFIER_FIELD');
 
@@ -214,6 +225,16 @@ export function syncUserData(user, ldapUser) {
       Meteor.users.findOne({ _id: user._id }, { $set: { username }});
     }
   }
+
+  if (LDAP.settings_get('LDAP_FULLNAME_FIELD') !== '') {
+    const fullname= getLdapFullname(ldapUser);
+    log_debug('fullname=',fullname);
+    if (user && user._id && fullname !== '') {
+      log_info('Syncing user fullname:', fullname);
+      Meteor.users.update({ _id:  user._id }, { $set: { 'profile.fullname' : fullname, }});
+    }
+  }
+
 }
 
 export function addLdapUser(ldapUser, username, password) {
