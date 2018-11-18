@@ -69,6 +69,8 @@ UTF8_Names_Slugify: Convert the username to utf8
 
 LDAP_Username_Field: Which field contains the ldap username
 
+LDAP_Fullname_Field: Which field contains the ldap full name
+
 LDAP_Sync_User_Data:
 
 LDAP_Sync_User_Data_FieldMap:
