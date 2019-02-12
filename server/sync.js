@@ -2,7 +2,7 @@ import _ from 'underscore';
 import LDAP from './ldap';
 import { log_debug, log_info, log_warn, log_error } from './logger';
 
-Object.defineProperty(Object.prototype, "getValue", {
+Object.defineProperty(Object.prototype, "getLDAPValue", {
   value: function (prop) {
       const self = this;
       for (let key in self) {
@@ -64,22 +64,21 @@ export function getLdapUsername(ldapUser) {
 
   if (usernameField.indexOf('#{') > -1) {
     return usernameField.replace(/#{(.+?)}/g, function(match, field) {
-      return ldapUser.getValue(field);
+      return ldapUser.getLDAPValue(field);
     });
   }
 
-  return ldapUser.getValue(usernameField);
+  return ldapUser.getLDAPValue(usernameField);
 }
 
 export function getLdapFullname(ldapUser) {
   const fullnameField = LDAP.settings_get('LDAP_FULLNAME_FIELD');
   if (fullnameField.indexOf('#{') > -1) {
     return fullnameField.replace(/#{(.+?)}/g, function(match, field) {
-      return ldapUser.getValue(field);
+      return ldapUser.getLDAPValue(field);
     });
   }
-
-  return ldapUser.getValue(fullnameField);
+  return ldapUser.getLDAPValue(fullnameField);
 }
 
 export function getLdapUserUniqueID(ldapUser) {
@@ -103,13 +102,13 @@ export function getLdapUserUniqueID(ldapUser) {
 
   if (Unique_Identifier_Field.length > 0) {
     Unique_Identifier_Field = Unique_Identifier_Field.find((field) => {
-      return !_.isEmpty(ldapUser._raw.getValue(field));
+      return !_.isEmpty(ldapUser._raw.getLDAPValue(field));
     });
     if (Unique_Identifier_Field) {
 		    log_debug(`Identifying user with: ${  Unique_Identifier_Field}`);
       Unique_Identifier_Field = {
         attribute: Unique_Identifier_Field,
-        value: ldapUser._raw.getValue(Unique_Identifier_Field).toString('hex'),
+        value: ldapUser._raw.getLDAPValue(Unique_Identifier_Field).toString('hex'),
       };
     }
     return Unique_Identifier_Field;
