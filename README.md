@@ -71,6 +71,14 @@ LDAP_Username_Field: Which field contains the ldap username
 
 LDAP_Fullname_Field: Which field contains the ldap full name
 
+LDAP_Email_Match_Enable: Allow existing account matching by e-mail address when username does not match
+
+LDAP_Email_Match_Require: Require existing account matching by e-mail address when username does match
+
+LDAP_Email_Match_Verified: Require existing account email address to be verified for matching
+
+LDAP_Email_Field: Which field contains the LDAP e-mail address
+
 LDAP_Sync_User_Data:
 
 LDAP_Sync_User_Data_FieldMap:
@@ -109,6 +117,11 @@ LDAP_Default_Domain: The default domain of the ldap it is used to create email i
   "LDAP_User_Search_Scope": "",
   "LDAP_Unique_Identifier_Field": "guid",
   "LDAP_Username_Field": "uid",
+  "LDAP_Fullname_Field": "cn",
+  "LDAP_Email_Match_Enable": true,
+  "LDAP_Email_Match_Require": false,
+  "LDAP_Email_Match_Verified": false,
+  "LDAP_Email_Field": "mail",
   "LDAP_Sync_User_Data": false,
   "LDAP_Sync_User_Data_FieldMap": "{\"cn\":\"name\", \"mail\":\"email\"}",
   "LDAP_Merge_Existing_Users": true,

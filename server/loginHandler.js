@@ -1,4 +1,4 @@
-import {slug, getLdapUsername, getLdapUserUniqueID, syncUserData, addLdapUser} from './sync';
+import {slug, getLdapUsername, getLdapEmail, getLdapUserUniqueID, syncUserData, addLdapUser} from './sync';
 import LDAP from './ldap';
 import { log_debug, log_info, log_warn, log_error } from './logger';
 
@@ -71,10 +71,13 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
   }
 
   // Look to see if user already exists
+
   let userQuery;
 
   const Unique_Identifier_Field = getLdapUserUniqueID(ldapUser);
   let user;
+
+  // Attempt to find user by unique identifier
 
   if (Unique_Identifier_Field) {
     userQuery = {
@@ -87,7 +90,10 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
     user = Meteor.users.findOne(userQuery);
   }
 
+  // Attempt to find user by username
+
   let username;
+  let email;
 
   if (LDAP.settings_get('LDAP_USERNAME_FIELD') !== '') {
     username = slug(getLdapUsername(ldapUser));
@@ -95,21 +101,63 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
     username = slug(loginRequest.username);
   }
 
+  if(LDAP.settings_get('LDAP_EMAIL_FIELD') !== '') {
+    email = getLdapEmail(ldapUser);
+  }
+
   if (!user) {
-    userQuery = {
-      username,
-    };
+    if(email && LDAP.settings_get('LDAP_EMAIL_MATCH_REQUIRE') === true) {
+      if(LDAP.settings_get('LDAP_EMAIL_MATCH_VERIFIED') === true) {
+        userQuery = {
+          '_id' : username,
+          'emails.0.address' : email,
+          'emails.0.verified' : true
+        };
+      } else {
+        userQuery = {
+          '_id' : username,
+          'emails.0.address' : email
+        };
+      }
+    } else {
+      userQuery = {
+        username
+      };
+    }
 
     log_debug('userQuery', userQuery);
 
     user = Meteor.users.findOne(userQuery);
   }
 
+  // Attempt to find user by e-mail address only
+
+  if (!user && email && LDAP.settings_get('LDAP_EMAIL_MATCH_ENABLE') === true) {
+
+    log_info('No user exists with username', username, '- attempting to find by e-mail address instead');
+
+    if(LDAP.settings_get('LDAP_EMAIL_MATCH_VERIFIED') === true) {
+      userQuery = {
+        'emails.0.address': email,
+        'emails.0.verified' : true
+      };
+    } else {
+      userQuery = {
+        'emails.0.address' : email
+      };
+    }
+
+    log_debug('userQuery', userQuery);
+
+    user = Meteor.users.findOne(userQuery);
+
+  }
+
   // Login user if they exist
   if (user) {
     if (user.authenticationMethod !== 'ldap' && LDAP.settings_get('LDAP_MERGE_EXISTING_USERS') !== true) {
       log_info('User exists without "authenticationMethod : ldap"');
-      throw new Meteor.Error('LDAP-login-error', `LDAP Authentication succeded, but there's already an existing user with provided username [${ username }] in Mongo.`);
+      throw new Meteor.Error('LDAP-login-error', `LDAP Authentication succeded, but there's already a matching Wekan account in MongoDB`);
     }
 
     log_info('Logging user');
@@ -123,12 +171,12 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
 
     if( LDAP.settings_get('LDAP_SYNC_GROUP_ROLES') === true ) {
       log_debug('Updating Groups/Roles');
-		    const groups = ldap.getUserGroups(username, ldapUser);
+      const groups = ldap.getUserGroups(username, ldapUser);
 
-		    if( groups.length > 0 ) {
+      if( groups.length > 0 ) {
         Roles.setUserRoles(user._id, groups );
         log_info(`Updated roles to:${  groups.join(',')}`);
-		    }
+      }
     }
 
     Meteor.users.update(user._id, update_data );
@@ -145,6 +193,8 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
     };
   }
 
+  // Create new user
+
   log_info('User does not exist, creating', username);
 
   if (LDAP.settings_get('LDAP_USERNAME_FIELD') === '') {
@@ -155,7 +205,6 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
     loginRequest.ldapPass = undefined;
   }
 
-  // Create new user
   const result = addLdapUser(ldapUser, username, loginRequest.ldapPass);
 
   if( LDAP.settings_get('LDAP_SYNC_GROUP_ROLES') === true ) {

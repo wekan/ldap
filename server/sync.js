@@ -71,6 +71,18 @@ export function getLdapUsername(ldapUser) {
   return ldapUser.getLDAPValue(usernameField);
 }
 
+export function getLdapEmail(ldapUser) {
+  const emailField = LDAP.settings_get('LDAP_EMAIL_FIELD');
+
+  if (emailField.indexOf('#{') > -1) {
+    return emailField.replace(/#{(.+?)}/g, function(match, field) {
+      return ldapUser.getLDAPValue(field);
+    });
+  }
+
+  return ldapUser.getLDAPValue(emailField);
+}
+
 export function getLdapFullname(ldapUser) {
   const fullnameField = LDAP.settings_get('LDAP_FULLNAME_FIELD');
   if (fullnameField.indexOf('#{') > -1) {
