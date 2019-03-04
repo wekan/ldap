@@ -174,10 +174,8 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
       const targetGroups = LDAP.settings_get('LDAP_SYNC_ADMIN_GROUPS').split(',');
       const groups = ldap.getUserGroups(username, ldapUser).filter((value) => targetGroups.includes(value));
 
-      if (groups.length > 0) {
-        user.isAdmin = true;
-        Meteor.users.update({_id: user.userId}, {$set: {isAdmin: true}});
-      }
+      user.isAdmin = groups.length > 0;
+      Meteor.users.update({_id: user._id}, {$set: {isAdmin: user.isAdmin}});
     }
 
     if( LDAP.settings_get('LDAP_SYNC_GROUP_ROLES') === true ) {
@@ -223,10 +221,8 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
     const targetGroups = LDAP.settings_get('LDAP_SYNC_ADMIN_GROUPS').split(',');
     const groups = ldap.getUserGroups(username, ldapUser).filter((value) => targetGroups.includes(value));
 
-    if (groups.length > 0) {
-      result.isAdmin = true;
-      Meteor.users.update({_id: result.userId}, {$set: {isAdmin: true}});
-    }
+    result.isAdmin = groups.length > 0;
+    Meteor.users.update({_id: result.userId}, {$set: {isAdmin: result.isAdmin}});
   }
 
   if( LDAP.settings_get('LDAP_SYNC_GROUP_ROLES') === true ) {

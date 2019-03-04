@@ -87,6 +87,10 @@ Accounts_CustomFields:
 
 LDAP_Default_Domain: The default domain of the ldap it is used to create email if the field is not map correctly with the LDAP_Sync_User_Data_FieldMap
 
+LDAP_SYNC_ADMIN_STATUS: enable/disable syncing of admin status based on ldap groups
+
+LDAP_SYNC_ADMIN_GROUPS: comma separated list of admin group names.
+
 
 
 
@@ -125,6 +129,8 @@ LDAP_Default_Domain: The default domain of the ldap it is used to create email i
   "LDAP_Sync_User_Data": false,
   "LDAP_Sync_User_Data_FieldMap": "{\"cn\":\"name\", \"mail\":\"email\"}",
   "LDAP_Merge_Existing_Users": true,
-  "UTF8_Names_Slugify": true
+  "UTF8_Names_Slugify": true,
+  "LDAP_SYNC_ADMIN_STATUS": true,
+  "LDAP_SYNC_ADMIN_GROUP": "group1,group2"
 }
 ```
