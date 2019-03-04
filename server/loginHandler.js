@@ -176,7 +176,7 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
 
       if (groups.length > 0) {
         user.isAdmin = true;
-        Meteor.users.update({_id: user.userId()}, {$set: {isAdmin: true}});
+        Meteor.users.update({_id: user.userId}, {$set: {isAdmin: true}});
       }
     }
 
