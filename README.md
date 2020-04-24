@@ -71,6 +71,8 @@ LDAP_Username_Field: Which field contains the ldap username
 
 LDAP_Fullname_Field: Which field contains the ldap full name
 
+LDAP_Initials_Field: Which field contains the ldap initials
+
 LDAP_Email_Match_Enable: Allow existing account matching by e-mail address when username does not match
 
 LDAP_Email_Match_Require: Require existing account matching by e-mail address when username does match
@@ -118,6 +120,7 @@ LDAP_Default_Domain: The default domain of the ldap it is used to create email i
   "LDAP_Unique_Identifier_Field": "guid",
   "LDAP_Username_Field": "uid",
   "LDAP_Fullname_Field": "cn",
+  "LDAP_Initials_Field": "initials",
   "LDAP_Email_Match_Enable": true,
   "LDAP_Email_Match_Require": false,
   "LDAP_Email_Match_Verified": false,

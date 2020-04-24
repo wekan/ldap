@@ -83,6 +83,17 @@ export function getLdapEmail(ldapUser) {
   return ldapUser.getLDAPValue(emailField);
 }
 
+export function getLdapInitials(ldapUser) {
+  const initialsField = LDAP.settings_get('LDAP_INITIALS_FIELD');
+
+  if (initialsField.indexOf('#{') > -1) {
+    return initialsField.replace(/#{(.+?)}/g, function(match, field) {
+      return ldapUser.getLDAPValue(field);
+    });
+  }
+  return ldapUser.getLDAPValue(initialsField);
+}
+
 export function getLdapFullname(ldapUser) {
   const fullnameField = LDAP.settings_get('LDAP_FULLNAME_FIELD');
   if (fullnameField.indexOf('#{') > -1) {
@@ -226,23 +237,32 @@ export function getDataToSyncUserData(ldapUser, user) {
 
 export function syncUserData(user, ldapUser) {
   log_info('Syncing user data');
-  log_debug('user', {'email': user.email, '_id': user._id});
+  log_debug('user', { 'email': user.email, '_id': user._id });
   // log_debug('ldapUser', ldapUser.object);
 
   if (LDAP.settings_get('LDAP_USERNAME_FIELD') !== '') {
     const username = slug(getLdapUsername(ldapUser));
     if (user && user._id && username !== user.username) {
       log_info('Syncing user username', user.username, '->', username);
-      Meteor.users.findOne({ _id: user._id }, { $set: { username }});
+      Meteor.users.findOne({ _id: user._id }, { $set: { username } });
     }
   }
 
   if (LDAP.settings_get('LDAP_FULLNAME_FIELD') !== '') {
-    const fullname= getLdapFullname(ldapUser);
-    log_debug('fullname=',fullname);
+    const fullname = getLdapFullname(ldapUser);
+    log_debug('fullname=', fullname);
     if (user && user._id && fullname !== '') {
       log_info('Syncing user fullname:', fullname);
-      Meteor.users.update({ _id:  user._id }, { $set: { 'profile.fullname' : fullname, }});
+      Meteor.users.update({ _id: user._id }, { $set: { 'profile.fullname': fullname, } });
+    }
+  }
+
+  if (LDAP.settings_get('LDAP_INITIALS_FIELD') !== '') {
+    const initials = getLdapInitials(ldapUser);
+    log_debug('initials=', initials);
+    if (user && user._id && initials !== '') {
+      log_info('Syncing user initials:', initials);
+      Meteor.users.update({ _id: user._id }, { $set: { 'profile.initials': initials, } });
     }
   }
 
