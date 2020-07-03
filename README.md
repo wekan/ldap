@@ -106,7 +106,7 @@ LDAP_Default_Domain: The default domain of the ldap it is used to create email i
   "LDAP_Authentication_Password": "admin",
   "LDAP_Internal_Log_Level": "debug",
   "LDAP_Background_Sync": false,
-  "LDAP_Background_Sync_Interval": "100",
+  "LDAP_Background_Sync_Interval": "every 1 minute",
   "LDAP_Encryption": false,
   "LDAP_Reject_Unauthorized": false,
   "LDAP_Group_Filter_Enable": false,
