@@ -134,7 +134,7 @@ Accounts.registerLoginHandler('ldap', function(loginRequest) {
 
   if (!user && email && LDAP.settings_get('LDAP_EMAIL_MATCH_ENABLE') === true) {
 
-    log_info('No user exists with username', username, '- attempting to find by e-mail address instead');
+    log_info(`No user exists with username ${username} - attempting to find by e-mail address instead`);
 
     if(LDAP.settings_get('LDAP_EMAIL_MATCH_VERIFIED') === true) {
       userQuery = {
